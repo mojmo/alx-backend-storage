@@ -30,7 +30,7 @@ class Cache:
         """
 
         self._redis = redis.Redis(host=host, port=port, db=db)
-        self.flush() # Flush the cache on initialization
+        self._redis.flushdb() # Flush the cache on initialization
 
     def store (self, data: Union[str, bytes, int, float]) -> str:
         """
