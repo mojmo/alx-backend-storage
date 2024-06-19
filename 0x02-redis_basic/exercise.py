@@ -82,6 +82,36 @@ def call_history(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(fn: Callable):
+    """
+    Display the history of calls of a particular function.
+
+    This function works with any callable that has been decorated with
+    `call_history_decorator`.
+
+    Args:
+        fn (Callable): The function to display the call history for.
+    """
+    redis_client = redis.Redis()
+    function_name = fn.__qualname__
+
+    call_count = redis_client.get(function_name)
+    call_count = call_count.decode('utf-8') if call_count else '0'
+
+    print(f'{function_name} was called {call_count} times:')
+
+    inputs_key = f"{function_name}:inputs"
+    outputs_key = f"{function_name}:outputs"
+
+    input_list = redis_client.lrange(inputs_key, 0, -1)
+    output_list = redis_client.lrange(outputs_key, 0, -1)
+
+    for input_data, output_data in zip(input_list, output_list):
+        input_str = input_data.decode('utf-8') if input_data else ""
+        output_str = output_data.decode('utf-8') if output_data else ""
+        print(f'{function_name}(*{input_str}) -> {output_str}')
+
+
 class Cache:
     """
     A class to interact with Redis as a simple cache.
