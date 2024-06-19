@@ -25,7 +25,7 @@ def cache_page(fn: Callable) -> Callable:
         redis_client.incr(count_key)
 
         # Check if the URL content is already cached
-        cache_key = f"cache:{url}"
+        cache_key = f"cached:{url}"
         cached_content = redis_client.get(cache_key)
         if cached_content:
             return cached_content.decode('utf-8')
