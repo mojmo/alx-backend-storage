@@ -18,6 +18,8 @@ def cache_page(fn: Callable) -> Callable:
 
     @wraps(fn)
     def wrapper(url: str) -> str:
+        """Wraps the original method"""
+
         # Increment the count for the URL
         count_key = f"count:{url}"
         redis_client.incr(count_key)
