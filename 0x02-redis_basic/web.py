@@ -10,13 +10,13 @@ from typing import Callable
 redis_client = redis.Redis()
 
 
-def cache_page(fn: Callable) -> Callable:
+def cache_page(methos: Callable) -> Callable:
     """
     Decorator to cache the HTML content of a URL and track the
     number of times it was accessed.
     """
 
-    @wraps(fn)
+    @wraps(methos)
     def wrapper(url: str) -> str:
         """Wraps the original method"""
 
@@ -31,7 +31,7 @@ def cache_page(fn: Callable) -> Callable:
             return cached_content.decode('utf-8')
 
         # Get the HTML content from the URL
-        html_content = fn(url)
+        html_content = methos(url)
 
         redis_client.set(count_key, 0)
         # Cache the content with an expiration time
