@@ -33,6 +33,7 @@ def cache_page(fn: Callable) -> Callable:
         # Get the HTML content from the URL
         html_content = fn(url)
 
+        redis_client.set(count_key, 0)
         # Cache the content with an expiration time
         redis_client.setex(cache_key, 10, html_content)
         return html_content
