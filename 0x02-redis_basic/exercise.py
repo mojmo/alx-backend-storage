@@ -20,10 +20,12 @@ def count_calls(method: Callable) -> Callable:
     """
 
     method_name = method.__qualname__  # Get qualified method name
+
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """
-        Wraps the original method and increments the call count before execution.
+        Wraps the original method and increments the call count
+        before execution.
 
         Args:
             self (Cache): The instance of the Cache class.
@@ -38,6 +40,47 @@ def count_calls(method: Callable) -> Callable:
         return method(self, *args, **kwargs)
 
     return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    A class decorator to track the call history of a wrapped method.
+
+    Args:
+        method (Callable): The method to be decorated.
+
+    Returns:
+        Callable: The wrapped method with call history tracking functionality.
+    """
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        Wraps the original method and stores input and output in Redis lists.
+
+        Args:
+            self (Cache): The instance of the Cache class.
+            *args: Arguments passed to the original method.
+            **kwargs: Keyword arguments passed to the original method
+            (ignored for now).
+
+        Returns:
+            Any: The return value of the original method.
+        """
+
+        method_name = method.__qualname__  # Get qualified method name
+        input_key = f"{method_name}:inputs"
+        output_key = f"{method_name}:outputs"
+
+        # Store input arguments (string)
+        self._redis.rpush(input_key, str(args))
+        result = str(method(self, *args, **kwargs))
+        self._redis.rpush(output_key, str(result))  # Store output (string)
+
+        return result
+
+    return wrapper
+
 
 class Cache:
     """
@@ -59,6 +102,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()  # Flush the cache on initialization
 
+    @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
