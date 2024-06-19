@@ -21,9 +21,8 @@ def analyze_logs(nginx_collection):
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]
     method_counts = {}
     for method in methods:
-        method_counts[method] = nginx_collection.count_documents(
-            {"method": method}
-        )
+        count = nginx_collection.count_documents({"method": method})
+        method_counts[method] = count
 
     # Count documents with method=GET and path=/status
     status_checks = nginx_collection.count_documents(
@@ -44,11 +43,3 @@ if __name__ == "__main__":
     collection = client.logs.nginx
 
     analyze_logs(collection)
-
-    # Close connection (optional)
-    client.close()
-
-if __name__ == "__main__":
-    client = MongoClient("mongodb://127.0.0.1:27017")
-    db = client.nginx_logs
-    print(db.logs.count())
