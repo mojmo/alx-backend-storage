@@ -19,17 +19,12 @@ class Cache:
             with the Redis server.
     """
 
-    def __init__(self, host='localhost', port=6379, db=0):
+    def __init__(self):
         """
         Initializes the Cache class with a Redis connection.
-
-        Args:
-            host (str, optional): The hostname of the Redis server. Defaults to 'localhost'.
-            port (int, optional): The port number of the Redis server. Defaults to 6379.
-            db (int, optional): The Redis database to use. Defaults to 0.
         """
 
-        self._redis = redis.Redis(host=host, port=port, db=db)
+        self._redis = redis.Redis()
         self._redis.flushdb() # Flush the cache on initialization
 
     def store (self, data: Union[str, bytes, int, float]) -> str:
@@ -46,10 +41,3 @@ class Cache:
         key = str(uuid.uuid4()) # Generate a unique key as a string
         self._redis.set(key, data)
         return key
-
-    def flush(self) -> None:
-        """
-        Flushes the Redis cache.
-        """
-        self._redis.flushdb()
-
