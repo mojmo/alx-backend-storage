@@ -1,2 +1,2 @@
 // Lists all documents with name starting by Holberton in the collection school
-db.find({name: /^Holberton/})
+db.school.find({name: /^Holberton/})
