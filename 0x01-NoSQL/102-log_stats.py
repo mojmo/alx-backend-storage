@@ -31,9 +31,14 @@ def analyze_logs(nginx_collection):
 
     # Find top 10 IP addresses by frequency (aggregation)
     pipeline = [
-        {"$group": {"_id": "$remote_addr", "count": {"$sum": 1}}},
+        {"$group": {"_id": "$ip", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},  # Sort by count descending
         {"$limit": 10},  # Limit to top 10 results
+        {"$project": {
+            "_id": 0,
+            "ip": "$_id",
+            "count": 1
+        }}
     ]
     ip_counts = nginx_collection.aggregate(pipeline)
 
