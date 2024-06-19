@@ -5,7 +5,39 @@
 from typing import Any, Callable, Optional, Union
 import uuid
 import redis
+from functools import wraps
 
+
+def count_calls(method: Callable) -> Callable:
+    """
+    A class decorator that counts the number of calls for a wrapped method.
+
+    Args:
+        method (Callable): The method to be decorated.
+
+    Returns:
+        Callable: The wrapped method with call counting functionality.
+    """
+
+    method_name = method.__qualname__  # Get qualified method name
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """
+        Wraps the original method and increments the call count before execution.
+
+        Args:
+            self (Cache): The instance of the Cache class.
+            *args: Arguments passed to the original method.
+            **kwargs: Keyword arguments passed to the original method.
+
+        Returns:
+            Any: The return value of the original method.
+        """
+
+        self._redis.incr(method_name)
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 class Cache:
     """
@@ -27,6 +59,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()  # Flush the cache on initialization
 
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         Stores the provided data in Redis and returns a randomly generated key.
@@ -96,17 +129,3 @@ class Cache:
             return int(self.get(key))
         except (ValueError, TypeError):
             return None
-
-
-if __name__ == '__main__':
-    cache = Cache()
-
-    TEST_CASES = {
-        b"foo": None,
-        123: int,
-        "bar": lambda d: d.decode("utf-8")
-    }
-
-    for value, fn in TEST_CASES.items():
-        key = cache.store(value)
-        assert cache.get(key, fn=fn) == value
