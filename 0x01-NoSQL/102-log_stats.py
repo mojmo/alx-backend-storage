@@ -50,8 +50,8 @@ def analyze_logs(nginx_collection):
     print(f"{status_checks} status check")
     print("IPs:")
     for ip_count in ip_counts:
-        ip = ip_count["_id"]
-        count = ip_count["count"]
+        ip = ip_count.get("ip")
+        count = ip_count.get("count")
         print(f"\t{ip}: {count}")
 
 
